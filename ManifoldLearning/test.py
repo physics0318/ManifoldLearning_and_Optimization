@@ -20,15 +20,31 @@ K = 4
 A = Isomap.Adjacency(K, method='k-nearest')
 
 #Create Geodesic Distance Matrix
-G = Isomap.FloydWarshall(A)
+G = [[0,1,1,3,3,7],
+    [1,0,1,2,3,7],
+    [1,1,0,3,2,6],
+    [3,2,3,0,3,7],
+    [3,3,2,3,0,4],
+    [7,7,6,7,4,0]]
 
-#Multidimension Scaling
-m = 2
-X = Isomap.MDS(G, m)
+I = np.identity(6)
+J = np.ones((6,6))
+H = I-(1/6)*J
+D = np.square(G)
+B = -(1/2)*H@D@H
 
-#Plot Data
-fig = plt.figure(figsize=(20,10))
-Isomap.plot_data(s_curve, color, 121, '3d')
-Isomap.plot_data(X, color, 122, '2d')
-Isomap.plot_graph(s_curve, A, 121, '3d')
+EigenValues,  EigenFunctions = np.linalg.eig(B)
+
+L = np.diag(EigenValues[:2])
+L = np.sqrt(L)
+E = EigenFunctions[:,:2]
+print(EigenFunctions)
+print(E)
+
+X = np.matmul(E,L)
+
+ax = plt.subplot(111)
+ax.scatter(X[:, 0], X[:, 1], cmap=plt.cm.Spectral)
+for i in range(len(X)):
+    plt.text(X[i][0], X[i][1], str(i))
 plt.show()
