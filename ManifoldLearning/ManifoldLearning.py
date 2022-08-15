@@ -66,6 +66,7 @@ class ManifoldLearning:
             for j, x in enumerate(w):
                 if x == 1:
                     W[i][j] = np.exp(-(self.Euclidean(self.data[i], self.data[j])**2)/2)
+                    
         return W
 
     def DegreeMatrix(self,A):
@@ -77,13 +78,14 @@ class ManifoldLearning:
             D[i][i] = np.sum(w)
         return D
 
-    def Laplacian(self,A,weight='Gaussian'):
+    def Laplacian(self, A, weight='Gaussian'):
         D = self.DegreeMatrix(A)
         if weight == 'Simple':
             W = A
         elif weight == 'Gaussian':
             W = self.GaussianWeight(A)
-        return D-W
+
+        return D - W
 
     def FloydWarshall(self, A):
         G = [[float("inf") for _ in range(self.N)] for _ in range(self.N)]

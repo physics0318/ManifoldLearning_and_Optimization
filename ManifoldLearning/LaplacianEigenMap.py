@@ -16,8 +16,20 @@ projected_digits = rand_proj.fit_transform(digits)
 LaplacianEigen = ManifoldLearning(s_curve)
 
 #Connecting K nearest neighbors
-K = 4
+K = 5
 A = LaplacianEigen.Adjacency(K, method='k-nearest')
 
 #Evaluate Graph Laplacian
 L = LaplacianEigen.Laplacian(A)
+
+eigenValue, eigenFunction = np.linalg.eigh(L)
+
+
+Y = eigenFunction[:,:2]
+
+#Plot Data
+fig = plt.figure(figsize=(20,10))
+LaplacianEigen.plot_data(s_curve, color, 121, '3d')
+LaplacianEigen.plot_data(Y, color, 122, '2d')
+LaplacianEigen.plot_graph(s_curve, A, 121, '3d')
+plt.show()
