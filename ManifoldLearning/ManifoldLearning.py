@@ -5,6 +5,7 @@ class ManifoldLearning:
     def __init__(self, data):
         self.data = data
         self.N = len(data)
+        self.reg = 0.0001
 
     def Euclidean(self, x, y):
         if len(x) == len(y):
@@ -87,6 +88,35 @@ class ManifoldLearning:
 
         return D - W
 
+    def GramMatrix(self, A, K):
+        G = np.zeros((self.N,K,K))
+        for i in range(self.N):
+            v = np.zeros(self.N)
+            v[i] = 1
+            w = np.matmul(A, v)
+            Z = []
+
+            j = 0
+            while len(Z) < K:
+                if w[j] == 1:
+                    Z.append(self.Euclidean(self.data[i],self.data[j]))
+                j += 1
+            for k in range(K):
+                for l in range(K):
+                    G[i][k][l] = Z[k]*Z[l]
+
+            if np.linalg.det(G[i])==0:
+                G[i] = G[i] + self.reg*np.identity(K)
+        return G
+            
+    def WeightsByLagrangeMult(self, G, k):
+        w =  np.zeros((len(G),k))
+        for i in range(len(G)):
+            w[i] = np.linalg.solve(G[i], np.ones(k))
+            w[i] = w[i]/np.sum(w[i])
+        return w
+        
+
     def FloydWarshall(self, A):
         G = [[float("inf") for _ in range(self.N)] for _ in range(self.N)]
         for i in range(self.N):
@@ -117,6 +147,28 @@ class ManifoldLearning:
         L = np.sqrt(L)
         E = EigenFunctions[:,:m]
         X = np.matmul(E,L)
+
+        return X
+
+    def DimReduct(self, A, weight, m):
+        W = np.zeros((self.N, self.N))
+        for i in range(self.N):
+            v = np.zeros(self.N)
+            v[i] = 1
+            w = np.matmul(A, v)
+            k = 0
+            for j, x in enumerate(w):
+                if x == 1:
+                    W[i][j] = weight[i][k]
+                    k += 1
+                    if k == len(weight[0]):
+                        break
+
+        I = np.identity(self.N) - W
+        M = np.matmul(I.transpose(), I)
+        eigenValues, eigenFunctions = np.linalg.eig(M)
+        L = len(eigenFunctions[0])
+        X = eigenFunctions[:, -2:-2-m:-1]
 
         return X
 
